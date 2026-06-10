@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>英文單字卡</title>
+
+    <style>
+        body {
+            text-align: center;
+            background-color: #eeeeee;
+        }
+
+        #card {
+            width: 360px;
+            min-height: 200px;
+            background-color: white;
+            margin: 30px auto;
+            font-size: 30px;
+            border: 1px solid black;
+            padding-top: 40px;
+        }
+
+        button {
+            font-size: 18px;
+            margin: 5px;
+        }
+
+        input {
+            font-size: 18px;
+            margin: 5px;
+        }
+
+        #admin {
+            width: 420px;
+            background-color: white;
+            border: 1px solid black;
+            margin: 30px auto;
+            padding: 20px;
+            display: none;
+        }
+
+        #loginBox {
+            width: 360px;
+            background-color: white;
+            border: 1px solid black;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .small {
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>英文單字卡</h1>
+
+<div id="card">water</div>
+
+<button onclick="showAnswer()">翻面</button>
+<button onclick="nextWord()">下一張</button>
+
+<p id="page">1 / 5</p>
+
+<hr>
+
+<div id="loginBox">
+    <h2>管理員登入</h2>
+    <input id="pass" type="password" placeholder="請輸入密碼">
+    <button onclick="login()">登入</button>
+    <p id="loginMsg"></p>
+</div>
+
+<div id="admin">
+    <h2>新增單字</h2>
+
+    <input id="newWord" placeholder="輸入英文單字">
+    <button onclick="makeData()">自動產生資料</button>
+
+    <p>中文翻譯</p>
+    <input id="chinese">
+
+    <p>詞性</p>
+    <input id="type">
+
+    <p>例句</p>
+    <input id="sentence">
+
+    <p>字根分析</p>
+    <input id="root">
+
+    <br><br>
+
+    <button onclick="addWord()">新增到單字卡</button>
+    <button onclick="saveSheet()">存入 Google Sheet</button>
+
+    <p id="msg"></p>
+</div>
+
+<script>
+var now = 0;
+var show = false;
+
+var words = [
+    ["water", "水", "名詞", "I drink water every day.", "water：水"],
+    ["bed", "床", "名詞", "I sleep on my bed.", "bed：床"],
+    ["cold", "冷", "形容詞", "It is cold today.", "cold：冷"],
+    ["cake", "蛋糕", "名詞", "I like cake.", "cake：蛋糕"],
+    ["dog", "狗", "名詞", "My dog is cute.", "dog：狗"]
+];
+
+function showAnswer()
+{
+    if (show == false) {
+        document.getElementById("card").innerHTML =
+        words[now][1] + "<br><span class='small'>詞性：" + words[now][2] + "</span><br><span class='small'>例句：" + words[now][3] + "</span><br><span class='small'>字根：" + words[now][4] + "</span>";
+
+        show = true;
+    } else {
+        document.getElementById("card").innerHTML = words[now][0];
+        show = false;
+    }
+}
+
+function nextWord()
+{
+    now = now + 1;
+
+    if (now >= words.length) {
+        now = 0;
+    }
+
+    document.getElementById("card").innerHTML = words[now][0];
+    document.getElementById("page").innerHTML = (now + 1) + " / " + words.length;
+
+    show = false;
+}
+
+function login()
+{
+    var p = document.getElementById("pass").value;
+
+    if (p == "1234") {
+        document.getElementById("admin").style.display = "block";
+        document.getElementById("loginBox").style.display = "none";
+    } else {
+        document.getElementById("loginMsg").innerHTML = "密碼錯誤";
+    }
+}
+
+function makeData()
+{
+    var w = document.getElementById("newWord").value;
+
+    if (w == "") {
+        document.getElementById("msg").innerHTML = "請先輸入英文單字";
+        return;
+    }
+
+    if (w == "water") {
+        document.getElementById("chinese").value = "水";
+        document.getElementById("type").value = "名詞";
+        document.getElementById("sentence").value = "I drink water every day.";
+        document.getElementById("root").value = "water：水";
+    } else if (w == "apple") {
+        document.getElementById("chinese").value = "蘋果";
+        document.getElementById("type").value = "名詞";
+        document.getElementById("sentence").value = "I eat an apple.";
+        document.getElementById("root").value = "apple：蘋果";
+    } else if (w == "book") {
+        document.getElementById("chinese").value = "書";
+        document.getElementById("type").value = "名詞";
+        document.getElementById("sentence").value = "I read a book.";
+        document.getElementById("root").value = "book：書";
+    } else {
+        document.getElementById("chinese").value = "請改成 API 回傳";
+        document.getElementById("type").value = "請改成 API 回傳";
+        document.getElementById("sentence").value = "請改成 API 回傳";
+        document.getElementById("root").value = "請改成 API 回傳";
+    }
+
+    document.getElementById("msg").innerHTML = "資料已自動填入";
+}
+
+function addWord()
+{
+    var w = document.getElementById("newWord").value;
+    var c = document.getElementById("chinese").value;
+    var t = document.getElementById("type").value;
+    var s = document.getElementById("sentence").value;
+    var r = document.getElementById("root").value;
+
+    if (w == "" || c == "") {
+        document.getElementById("msg").innerHTML = "資料不完整";
+        return;
+    }
+
+    words[words.length] = [w, c, t, s, r];
+
+    document.getElementById("page").innerHTML = (now + 1) + " / " + words.length;
+    document.getElementById("msg").innerHTML = "已新增到單字卡";
+}
+
+function saveSheet()
+{
+    var url = "請貼上Google Apps Script網址";
+
+    var data = {
+        word: document.getElementById("newWord").value,
+        chinese: document.getElementById("chinese").value,
+        type: document.getElementById("type").value,
+        sentence: document.getElementById("sentence").value,
+        root: document.getElementById("root").value
+    };
+
+    if (url == "請貼上Google Apps Script網址") {
+        document.getElementById("msg").innerHTML = "還沒設定 Google Apps Script 網址";
+        return;
+    }
+
+    fetch(url, {
+        method: "POST",
+        body: JSON.stringify(data)
+    })
+    .then(function(response) {
+        return response.text();
+    })
+    .then(function(text) {
+        document.getElementById("msg").innerHTML = "已存入 Google Sheet";
+    });
+}
+</script>
+
+</body>
+</html>
